@@ -88,7 +88,73 @@ $$
 
 對於每一塊的加密的消息都是小於 m 的，所以求得結果自然也就是明文了。
 
-### 
+### python implement
+
+```python
+import secrets
+from Crypto.Util import number
+import math
+
+def int_to_bits(data):
+    return list(map(int, list(bin(data)[2:])))[::-1]
+    
+def bits_to_int(data):    
+    return sum([pow(2, i)*j for i, j in enumerate(data)])
+    
+def randkey(size=500, first_size=128, q_add=256):
+    a = [secrets.randbits(first_size) + 1]
+    total = a[0]
+    for i in range(size-1):
+        a.append(int(total*1.5) + secrets.randbelow(total) + 1)
+        total += a[-1]
+    q = total + secrets.randbits(q_add) + 1
+    while True:
+        r = secrets.randbelow(q-2) + 2 
+        if math.gcd(r, q) == 1:
+            break
+    pubkey = [(i*r)%q for i in a]    
+    prikey = [a, q, pow(r, -1, q)]
+    return pubkey, prikey
+    
+def encrypt(data, pubkey):
+    data = int_to_bits(data)
+    ld, lp = len(data), len(pubkey)
+    assert ld <= lp
+    data = data + [0] * (lp-ld)
+    result = 0
+    for i, j in zip(data, pubkey):
+        result += i*j
+    return result
+ 
+def decrypt(data, prikey):
+    a, q, inv_r = prikey
+    size = len(a)
+    nd = (data * inv_r)%q
+    result = 0
+    for i in range(size-1, -1, -1):
+        ai = a[i]
+        if nd >= ai:
+            result += pow(2, i)
+            nd -= ai
+    return result
+
+def main():
+    # test
+    from Crypto.Util.number import bytes_to_long, long_to_bytes
+   
+    data = b'ohhi!'
+    pubkey, prikey = randkey()   
+    print("data:", data)
+    print("="*50)
+    ct = encrypt(bytes_to_long(data), pubkey)
+    print(ct)
+    print("="*50)
+    pt = long_to_bytes(decrypt(ct, prikey))
+    print(pt)
+    
+if __name__ == "__main__":
+    main()
+```
 
 ### 破解
 
