@@ -58,7 +58,7 @@ $$
 b_i \equiv w a_i \bmod m
 $$
 
-并将这个新的背包集 $b_i$ 和 m 作为公钥。
+并将这个新的背包集 $b_i$ 作为公钥， $a_i, w, m$ 则做为私钥保存。
 
 ### 加解密
 
@@ -67,14 +67,14 @@ $$
 假设我们要加密的明文为 v，其每一个比特位为 $v_i$，那么我们加密的结果为
 
 $$
-\sum_{i=1}^{i=n}b_iv_i \bmod m
+\sum_{i=1}^{i=n}b_iv_i 
 $$
 
 #### 解密
 
 对于解密方，首先可以求的 w 关于 m 的逆元 $w^{-1}$。
 
-然后我们可以将得到的密文乘以 $w^{-1}$ 即可得到明文，这是因为
+然后我们可以将得到的密文乘以 $w^{-1} \bmod m$ 即可得到明文，这是因为
 
 $$
 \sum_{i=1}^{i=n}w^{-1}b_iv_i \bmod m=\sum_{i=1}^{i=n}a_iv_i \bmod m
@@ -87,6 +87,74 @@ b_i \equiv w a_i \bmod m
 $$
 
 对于每一块的加密的消息都是小于 m 的，所以求得结果自然也就是明文了。
+
+### python implement
+
+```python
+import secrets
+from Crypto.Util import number
+import math
+
+def int_to_bits(data):
+    return list(map(int, list(bin(data)[2:])))[::-1]
+    
+def bits_to_int(data):    
+    return sum([pow(2, i)*j for i, j in enumerate(data)])
+    
+def randkey(size=500, first_size=128, q_add=256):
+    a = [secrets.randbits(first_size) + 1]
+    total = a[0]
+    for i in range(size-1):
+        a.append(int(total*1.5) + secrets.randbelow(total) + 1)
+        total += a[-1]
+    q = total + secrets.randbits(q_add) + 1
+    while True:
+        r = secrets.randbelow(q-2) + 2 
+        if math.gcd(r, q) == 1:
+            break
+    pubkey = [(i*r)%q for i in a]    
+    prikey = [a, q, pow(r, -1, q)]
+    return pubkey, prikey
+    
+def encrypt(data, pubkey):
+    data = int_to_bits(data)
+    ld, lp = len(data), len(pubkey)
+    assert ld <= lp
+    data = data + [0] * (lp-ld)
+    result = 0
+    for i, j in zip(data, pubkey):
+        result += i*j
+    return result
+ 
+def decrypt(data, prikey):
+    a, q, inv_r = prikey
+    size = len(a)
+    nd = (data * inv_r)%q
+    result = 0
+    for i in range(size-1, -1, -1):
+        ai = a[i]
+        if nd >= ai:
+            result += pow(2, i)
+            nd -= ai
+    return result
+
+def main():
+    # test
+    from Crypto.Util.number import bytes_to_long, long_to_bytes
+   
+    data = b'ohhi!'
+    pubkey, prikey = randkey()   
+    print("data:", data)
+    print("="*50)
+    ct = encrypt(bytes_to_long(data), pubkey)
+    print(ct)
+    print("="*50)
+    pt = long_to_bytes(decrypt(ct, prikey))
+    print(pt)
+    
+if __name__ == "__main__":
+    main()
+```
 
 ### 破解
 
