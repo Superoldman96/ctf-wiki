@@ -22,12 +22,12 @@ Agent Loop 本质上是一种通用的基础执行框架的抽象概念，在工
 
 首先我们先设计一下我们的 Agent Loop 的基本架构，一个最简单也最容易想到的的设计方案便是：
 
-- 1. 我们给出一个初始目标
-- 2. LLM 根据这个目标生成一个动作（通常是外部工具调用，例如执行 bash 指令）
-- 3. 在指定环境中执行这个动作
-- 4. 将动作的结果告诉 LLM
-- 5. LLM 根据这个结果生成下一步动作
-- 6. 重复 3～5 直到达成目标，从而退出循环
+- 1.我们给出一个初始目标
+- 2.LLM 根据这个目标生成一个动作（通常是外部工具调用，例如执行 bash 指令）
+- 3.在指定环境中执行这个动作
+- 4.将动作的结果告诉 LLM
+- 5.LLM 根据这个结果生成下一步动作
+- 6.重复 3～5 直到达成目标，从而退出循环
 
 用伪代码来书写便是：
 
@@ -323,7 +323,7 @@ Please generate a reply in the form of JSON.
 
 #### 5. 构建 LLM-based 的 Agent Loop
 
-下面总算来到最为核心的一步，也就是构建一个观测->执行的循环，让咱们的 Agent Loop 真正地动起来
+下面总算来到最为核心的一步，也就是构建一个 `观测->执行` 的循环，让咱们的 Agent Loop 真正地动起来
 
 首先我们需要让 LLM 仅输出格式化信息，我们的期望是 LLM 仅输出 JSON 格式的消息，从而方便我们进行解析，由于 LLM 本身仅能接收文本输入，因此这一规约仅能通过 PROMPT 来完成，也就是我们提前提供给 LLM 的初始输入。
 
@@ -509,9 +509,11 @@ def parse_args(argv) -> tuple[AgentConfig, bool]:
         return AgentConfig.load(args.config), True
 ```
 
+至此，我们的 AI Agent （或者说 Harness） 的核心代码已经成功完成构建。
+
 #### 8. 实战：利用 Naive Agent Loop 解决简单的 CTF 题目
 
-这里我们以 `[强网杯 2019]随便注` 这道题目作为我们的自动化测试的例子。测试平台选择 [https://ctf2.dasctf.com/](https://ctf2.dasctf.com/) 。我们首先在平台上启动这道题的靶机，然后将靶机地址作为初始输入给到我们的 Agent Loop，选取 DeepSeek 官网的 `deepseek-v4-pro` 模型（2026 年发布的 DeepSeek-V4-Pro） 作为我们的基模，得到如下自动化解题过程：
+这里我们以 `[强网杯 2019]随便注` 这道题目作为我们的自动化测试的例子。测试平台选择 [https://ctf2.dasctf.com/](https://ctf2.dasctf.com/) 。我们首先在平台上启动这道题的靶机，然后将靶机地址作为初始输入给到我们的 Agent Loop，选取 DeepSeek 官网的 `deepseek-v4-pro` 模型（2026 年发布的 DeepSeek-V4-Pro Preview） 作为我们的基模，得到如下自动化解题过程：
 
 ```
 $ python3 example-agent-loop.py --config ./example-agent-config.json 
