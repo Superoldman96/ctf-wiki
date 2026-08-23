@@ -51,7 +51,7 @@
 
 這裏主要介紹兩款爆破使用的工具
 
--   `Windows`下的神器 [ARCHPR](http://www.downcc.com/soft/130539.html)
+-   `Windows`下的神器 [ARCHPR](https://www.elcomsoft.com/archpr.html)
 
     ![](./figure/1.png)
 
@@ -148,7 +148,7 @@ else:
 
 #### 工具
 
-- Windows下的神器 [ARCHPR](http://www.downcc.com/soft/130539.html)
+- Windows下的神器 [ARCHPR](https://www.elcomsoft.com/archpr.html)
 - Linux下的 [PKCrack](http://www.unix-ag.uni-kl.de/~conrad/krypto/pkcrack.html)
 
 !!! note
